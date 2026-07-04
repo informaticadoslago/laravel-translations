@@ -1,5 +1,9 @@
 # informaticadoslago/laravel-translations
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/informaticadoslago/laravel-translations.svg)](https://packagist.org/packages/informaticadoslago/laravel-translations)
+[![Total Downloads](https://img.shields.io/packagist/dt/informaticadoslago/laravel-translations.svg)](https://packagist.org/packages/informaticadoslago/laravel-translations)
+[![License](https://img.shields.io/packagist/l/informaticadoslago/laravel-translations.svg)](https://packagist.org/packages/informaticadoslago/laravel-translations)
+
 Cadena completa de traducción para Laravel en un solo paquete:
 
 1. **Extrae** los textos del código (`__()`, `@lang`, `trans()`, `Lang::get()`) a
