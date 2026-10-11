@@ -8,7 +8,7 @@ use InformaticadosLago\Translations\Support\StringScanner;
 
 class ExtractCommand extends Command
 {
-    protected $signature = 'informaticadoslago:extract
+    protected $signature = 'translationsdoslago:extract
         {paths?* : Carpetas a escanear (por defecto, config translations.extract.paths)}
         {--lang= : Locale destino (por defecto config app.locale)}
         {--formats=both : Qué generar: array | json | both}

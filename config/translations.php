@@ -45,7 +45,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Extractor (comando informaticadoslago:extract)
+    | Extractor (comando translationsdoslago:extract)
     |--------------------------------------------------------------------------
     */
 

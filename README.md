@@ -7,18 +7,18 @@
 Cadena completa de traducción para Laravel en un solo paquete:
 
 1. **Extrae** los textos del código (`__()`, `@lang`, `trans()`, `Lang::get()`) a
-   `lang/{locale}.json` y `lang/{locale}/*.php` — comando `informaticadoslago:extract`.
+   `lang/{locale}.json` y `lang/{locale}/*.php` — comando `translationsdoslago:extract`.
 2. **Traduce** esos ficheros a otros idiomas con **Google Translate** u **OpenAI**,
-   con **caché en base de datos** y peticiones **en lote** — comando `informaticadoslago:translate`.
+   con **caché en base de datos** y peticiones **en lote** — comando `translationsdoslago:translate`.
 
 ## Flujo completo
 
 ```bash
 # 1. Sacar los textos del código al idioma origen (es)
-php artisan informaticadoslago:extract app resources/views --lang=es
+php artisan translationsdoslago:extract app resources/views --lang=es
 
 # 2. Traducir el JSON de literales al inglés (en dummy para probar)
-php artisan informaticadoslago:translate lang/es.json --to=en
+php artisan translationsdoslago:translate lang/es.json --to=en
 ```
 
 El extractor separa automáticamente:
@@ -44,8 +44,8 @@ El extractor separa automáticamente:
 
 ## Requisitos
 
-- PHP 8.1+
-- Laravel 10, 11 o 12
+- PHP 8.3+
+- Laravel 10, 11, 12 o 13
 
 ## Instalación
 
@@ -77,7 +77,15 @@ composer require informaticadoslago/laravel-translations:@dev
 
 ## Configuración
 
-Publica la configuración y ejecuta la migración de la caché:
+Publica la configuración y crea la tabla de la caché:
+
+```bash
+php artisan translationsdoslago:install
+```
+
+Publica `config/translations.php` y pregunta si ejecutar las migraciones. Si
+dices que no, ejecuta `php artisan migrate` antes de traducir o usa
+`--nodatabase`. Equivale a:
 
 ```bash
 php artisan vendor:publish --tag=translations-config
@@ -103,24 +111,24 @@ TRANSLATIONS_TIMEOUT=60
 > Con `TRANSLATIONS_PROVIDER=dummy` puedes probar todo el flujo sin gastar
 > cuota ni configurar claves: prefija cada texto con `[en] ...`.
 
-## Uso: extraer (`informaticadoslago:extract`)
+## Uso: extraer (`translationsdoslago:extract`)
 
 ```bash
-php artisan informaticadoslago:extract {carpetas...} [opciones]
+php artisan translationsdoslago:extract {carpetas...} [opciones]
 ```
 
 ```bash
 # Escanea app y resources/views, escribe lang/es.json y lang/es/*.php
-php artisan informaticadoslago:extract app resources/views --lang=es
+php artisan translationsdoslago:extract app resources/views --lang=es
 
 # Ver qué encontraría, sin escribir nada
-php artisan informaticadoslago:extract app --dry
+php artisan translationsdoslago:extract app --dry
 
 # Solo el JSON de literales
-php artisan informaticadoslago:extract app --formats=json
+php artisan translationsdoslago:extract app --formats=json
 
 # Incluir .js/.ts y guardar informe de referencias
-php artisan informaticadoslago:extract resources --include-js --report=storage/lang-report.json
+php artisan translationsdoslago:extract resources --include-js --report=storage/lang-report.json
 ```
 
 | Opción            | Descripción                                                         |
@@ -140,6 +148,44 @@ Qué funciones detecta, qué directivas Blade y qué excluir se configura en
 `config/translations.php` (`php_functions`, `key_functions`, `blade_directives`,
 `js_functions`, `exclude`). Una exclusión que acaba en `/` (p.ej. `vendor/`)
 descarta esa carpeta a cualquier profundidad.
+
+### Qué carpetas escanear (y por qué no `.`)
+
+Pasa solo las carpetas con textos de la aplicación: `app`, `resources/views` y,
+si usas `trans_key()`, `config`. Escanear la raíz con `.` tiene dos problemas:
+
+- **Mete textos que no son de la aplicación.** Entra también en `tests/` y
+  `database/`, así que los `__()` que haya ahí acaban en `lang/es.json` y se
+  traducen gastando cuota como cualquier otro texto.
+- **Es lento.** Las exclusiones se comprueban fichero a fichero, no por carpeta:
+  aunque `vendor/` y `node_modules/` estén excluidas, se recorren enteras.
+
+Para no repetir las carpetas en cada ejecución, ponlas en `extract.paths` de la
+configuración publicada y lanza el comando sin argumentos.
+
+### Cambiar las exclusiones
+
+Publica la configuración (crea `config/translations.php` en tu proyecto):
+
+```bash
+php artisan vendor:publish --tag=translations-config
+```
+
+y edita `exclude`:
+
+```php
+'exclude' => [
+    'vendor/',
+    'node_modules/',
+    'storage/',
+    'bootstrap/cache/',
+    'lang/',
+    'tests/',   // añadida
+],
+```
+
+La lista del proyecto **sustituye** a la del paquete (no se suman), así que no
+borres las que ya trae.
 
 ### Claves fuera de las vistas: `trans_key()`
 
@@ -182,38 +228,38 @@ if (! function_exists('trans_key')) {
 > en `es.json` de una extracción anterior (heurística previa), **eclipsa** al
 > fichero PHP y verás el literal. Límpiala del JSON.
 
-## Uso: traducir (`informaticadoslago:translate`)
+## Uso: traducir (`translationsdoslago:translate`)
 
 ### Ejemplos
 
 Traducir toda la carpeta `lang/es` al inglés:
 
 ```bash
-php artisan informaticadoslago:translate lang/es --to=en
+php artisan translationsdoslago:translate lang/es --to=en
 ```
 
 Un solo fichero PHP a varios idiomas:
 
 ```bash
-php artisan informaticadoslago:translate lang/es/auth.php --to=en --to=fr --to=pt
+php artisan translationsdoslago:translate lang/es/auth.php --to=en --to=fr --to=pt
 ```
 
 Un fichero JSON:
 
 ```bash
-php artisan informaticadoslago:translate lang/es.json --to=en
+php artisan translationsdoslago:translate lang/es.json --to=en
 ```
 
 Sobrescribir destinos existentes y sin usar la caché:
 
 ```bash
-php artisan informaticadoslago:translate lang/es --to=en --overwrite --nodatabase
+php artisan translationsdoslago:translate lang/es --to=en --overwrite --nodatabase
 ```
 
 Sacar la salida a otra carpeta:
 
 ```bash
-php artisan informaticadoslago:translate lang/es --to=en --target_dir=resources/lang/custom
+php artisan translationsdoslago:translate lang/es --to=en --target_dir=resources/lang/custom
 ```
 
 ### Opciones
@@ -261,6 +307,7 @@ $translator->stats();
 ```
 src/
   Commands/ExtractCommand.php       Escanea el código → ficheros lang.
+  Commands/InstallCommand.php       Publica la config y pregunta si migrar.
   Commands/TranslateCommand.php     Traduce ficheros lang.
   Contracts/TranslationProvider.php Interfaz de proveedor.
   Providers/GoogleProvider.php      Google (POST + JSON).

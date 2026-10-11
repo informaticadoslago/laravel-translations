@@ -4,6 +4,7 @@ namespace InformaticadosLago\Translations;
 
 use Illuminate\Support\ServiceProvider;
 use InformaticadosLago\Translations\Commands\ExtractCommand;
+use InformaticadosLago\Translations\Commands\InstallCommand;
 use InformaticadosLago\Translations\Commands\TranslateCommand;
 
 class TranslationsServiceProvider extends ServiceProvider
@@ -18,6 +19,7 @@ class TranslationsServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ExtractCommand::class,
+                InstallCommand::class,
                 TranslateCommand::class,
             ]);
 

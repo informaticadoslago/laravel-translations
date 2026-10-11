@@ -17,6 +17,16 @@ class TranslationCache
     }
 
     /**
+     * ¿Existe la tabla? No existe hasta que se ejecuta la migración del paquete.
+     */
+    public static function tableExists(): bool
+    {
+        $model = new Model();
+
+        return $model->getConnection()->getSchemaBuilder()->hasTable($model->getTable());
+    }
+
+    /**
      * Precarga en memoria todas las traducciones ya conocidas para un par de
      * locales, para no lanzar una consulta por texto. Devuelve [source_text => translated_text].
      *

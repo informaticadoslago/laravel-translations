@@ -15,7 +15,7 @@ use Throwable;
 
 class TranslateCommand extends Command
 {
-    protected $signature = 'informaticadoslago:translate
+    protected $signature = 'translationsdoslago:translate
         {source : Fichero o carpeta de origen (p.ej. lang/es, lang/es.json o lang/es/auth.php)}
         {--from= : Locale de origen (se autodetecta de la ruta si se omite)}
         {--to=* : Locale(s) de destino. Repetible: --to=en --to=fr}
@@ -67,6 +67,12 @@ class TranslateCommand extends Command
         }
 
         $useCache  = (bool) config('translations.database', true) && ! $this->option('nodatabase');
+
+        if ($useCache && ! TranslationCache::tableExists()) {
+            $this->error('Falta la tabla translations_caches: ejecuta php artisan migrate o usa --nodatabase.');
+            return self::FAILURE;
+        }
+
         $cache     = $useCache ? new TranslationCache($provider->name()) : null;
         $batchSize = (int) ($this->option('batch') ?: config('translations.batch_size', 20));
 
